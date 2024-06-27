@@ -91,11 +91,10 @@ with ekg_tab:
     st.session_state.user_notes.setdefault(notes_key, "")
     user_notes = st.text_area(
         'Platz für Notizen:',
-        st.session_state.user_notes.get(notes_key, "")
-    )
+        st.session_state.user_notes.get(notes_key, ""),
+        key=notes_key
+        )
     st.session_state.user_notes[notes_key] = user_notes
-
-
 
     # EKG-Daten anzeigen
     current_ekg_data = ekgdata.EKGdata.load_by_id(person.id, st.session_state.ekg_test)
@@ -110,12 +109,18 @@ with ekg_tab:
  
     # EKG-Daten als Matplotlib Plot anzeigen
     
-    fig = current_ekg_data_class.plot_time_series()
+    #fig = current_ekg_data_class.plot_time_series()
+    #st.plotly_chart(fig)
+
+    st.subheader("Wählen sie eine Zeitperiode aus:")
+    slider_range = st.slider("Zeitbereich:", value=[float(0), current_ekg_data_class.time_in_seconds()/60], min_value=float(0), max_value=current_ekg_data_class.time_in_seconds()/60, step=1/60)
+    start, end = slider_range
+    st.write("Von: ", round(start, 2), " bis: ", round(end, 2), "Minuten")
     
-
-    st.plotly_chart(fig)
-
-   
+    # Update the plot with the selected range
+    fig = current_ekg_data_class.plot_time_series()
+    fig.update_layout(xaxis=dict(range=[start, end]))
+    st.plotly_chart(fig) 
 
     #st.slider("von", 0, current_ekg_data_class.max_time(), 0)
     #st.slider("bis", 0, current_ekg_data_class.max_time(), current_ekg_data_class.max_time() - 1)
@@ -138,8 +143,6 @@ with ekg_tab:
         st.pyplot(plt)
 
         
-
-
 with bmi_taab:
     gewicht = st.number_input("Gewicht in kg")
     groesse = st.number_input("Größe in cm")
