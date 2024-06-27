@@ -73,6 +73,33 @@ class EKGdata:
         
         peaks, _ = signal.find_peaks(self.df['EKG in mV'], height=340) 
         return peaks
+    
+    def estimate_heartrate(self):
+        
+        peaks = self.find_peaks()
+        
+        if len(peaks) < 2:
+            raise ValueError("Not enough peaks to estimate heart rate")
+        
+        # Calculate the time between the peaks
+        time_between_peaks_in_ms = np.zeros(len(peaks) - 1, dtype='int64')
+        for i in range(len(peaks) - 1):
+            time_between_peaks_in_ms[i] = (self.df['Time in ms'][peaks[i + 1]] - self.df['Time in ms'][peaks[i]])
+            
+        # Convert the time between the peaks to minutes
+        time_between_peaks = time_between_peaks_in_ms / 1000 / 60
+        
+        # Calculate the heart rate
+        heart_rate = 1 / time_between_peaks
+
+        # Plot the heart rate (optional)
+        time_ms = self.df['Time in ms'][peaks[1:]]
+        time_m = time_ms / 1000 / 60
+        
+        # Mean heart rate
+        mean_heart_rate = np.mean(heart_rate)
+
+        return heart_rate, mean_heart_rate
         
 
     def mean_heart_rate(self):

@@ -45,6 +45,7 @@ class Person:
         max_heart_rate = 220 - age
 
         return max_heart_rate
+    
 
 
 if __name__ == "__main__":
