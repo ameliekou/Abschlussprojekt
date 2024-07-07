@@ -6,8 +6,7 @@ Dieses Repository enthält eine Klasse `EKGData`, die verwendet wird, um die Her
 
 1. Klone das Repository:
     ```sh
-    git clone <https://github.com/tomperg/PuKP2.git>
-    cd <PuKP2>
+    git clone <https://github.com/ameliekou/Abschlussprojekt>
     ```
 
 2. Erstelle eine virtuelle Umgebung und aktiviere sie:
@@ -26,4 +25,4 @@ Dieses Repository enthält eine Klasse `EKGData`, die verwendet wird, um die Her
 ```sh
    streamlit run main.py
  ```
-Daraufhin sollte sich die Website öffnen!
+Mit folgendem Link lässt sich die App öffnen: https://abschlussprojekt.streamlit.app/
