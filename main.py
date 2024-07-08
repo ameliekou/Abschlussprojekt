@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import Person
 import numpy as np
 from read_pandas import read_my_csv, read_activity_csv, compute_HR_statistics, compute_power_statistics, make_pow_HR_plot, add_HR_zones, make_plot, compute_power_in_zones, compute_time_in_zones
+
 # Zu Beginn
 
 ekg_tab, bmi_taab, zonen_taaab=st.tabs(["EKG-Daten", "BMI Rechner" ," Zonen"])
@@ -144,15 +145,116 @@ with ekg_tab:
 
         
 with bmi_taab:
+    def calculate_angle_for_bmi(sizes, labels, bmi_category):
+        category_index = labels.index(bmi_category)
+        start_angle = sum(sizes[:category_index]) / sum(sizes) * 360
+        slice_angle = sizes[category_index] / sum(sizes) * 360
+        return start_angle + slice_angle / 2
+    
+    def calculate_angle_and_label_positions(sizes, labels):
+        angles = []
+        label_positions = []
+
+        total = sum(sizes)
+        cumulative_sizes = np.cumsum(sizes)
+    
+        for i in range(len(labels)):
+            if i == 0:
+                start_angle = 0
+            else:
+                start_angle = cumulative_sizes[i - 1] / total * 360
+        
+            slice_angle = sizes[i] / total * 360
+            angle = start_angle + slice_angle / 2
+            angles.append(angle)
+        
+        # Position für die Label-Beschriftung
+            label_angle = start_angle + slice_angle / 2
+            label_x = 0.7 * np.cos(np.radians(label_angle))  # Grobe Anpassung mit 0.7 um näher am Kreisrand zu sein
+            label_y = 0.7 * np.sin(np.radians(label_angle))  
+            label_positions.append((label_x, label_y))
+
+        return angles, label_positions
+    
+
+
+with st.container():
     gewicht = st.number_input("Gewicht in kg")
     groesse = st.number_input("Größe in cm")
-
-    #if st.button("BMI berechnen"):
-        #st.write("Der BMI beträgt: ", gewicht / (groesse/100)**2)
+    
     if groesse > 0 and gewicht > 0:
+        try:
             bmi = gewicht / (groesse / 100) ** 2
-            bmi_rounded = round(bmi, 1)
-            st.write("Der BMI beträgt: {:.1f}".format(bmi_rounded))
+            if bmi > 105:
+                st.write("Bitte Größe in cm eingeben")
+            else:
+                bmi_rounded = round(bmi, 1)
+                st.write("Ihr BMI beträgt: {:.1f}".format(bmi_rounded))
+                
+                # BMI Kategorien
+                if bmi < 18.5:
+                    bmi_kategorie = 'Untergewicht'
+                    bmi_value = '105'
+                    farbe = 'yellow'
+                elif 18.5 <= bmi < 25:
+                    bmi_kategorie = 'Normalgewicht'
+                    bmi_value = '18.5'
+                    farbe = 'green'
+                elif 25 <= bmi < 30:
+                    bmi_kategorie = 'Übergewicht'
+                    bmi_value = '25'
+                    farbe = 'orange'
+                else:
+                    bmi_kategorie = 'Adipositas'
+                    bmi_value = '30'
+                    farbe = 'red'
+
+                # Daten für das Kuchendiagramm
+                labels = ['Untergewicht', 'Normalgewicht', 'Übergewicht', 'Adipositas']
+                sizes = [18.5, 6.5, 5, 100 - 30]  # Anteile basierend auf BMI-Grenzen
+                colors = ['yellow', 'green', 'orange', 'red']
+                bmi_Werte = ["0 - 18.5", "18.5 - 25", "25 - 30", "30 - 105"]
+
+                fig1, ax1 = plt.subplots()
+                angles, label_positions = calculate_angle_and_label_positions(sizes, labels)
+                
+                wedges, texts = ax1.pie(sizes, labels=labels, colors=colors, startangle=0, 
+                                                   textprops=dict(color="black", fontsize=10))
+            
+                ax1.legend(wedges, labels, title="BMI Kategorien", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+                ax1.axis('equal')  # Gleichmäßiger Kreis
+                
+                for i, wedge in enumerate(wedges):
+                    angle = (wedge.theta2 - wedge.theta1) / 2. + wedge.theta1
+                    x = wedge.r * 0.8 * np.cos(np.deg2rad(angle))
+                    y = wedge.r * 0.8 * np.sin(np.deg2rad(angle))
+                    ax1.text(x, y, bmi_Werte[i], ha='center', va='center', fontsize=6.5, color='black')
+
+                # Anzeige des Kuchendiagramms in Streamlit
+                
+                st.pyplot(fig1)
+
+                # Anzeige der BMI Kategorie und Farbe in HTML
+                st.markdown("### BMI Kategorie")
+                st.markdown(f"Der BMI entspricht der Kategorie: <span style='color:{farbe}'>{bmi_kategorie}</span>", unsafe_allow_html=True)
+
+                # Erklärung für jede Kategorie
+                if bmi_kategorie == 'Untergewicht':
+                    st.write("Untergewicht kann auf verschiedene Ursachen zurückzuführen sein, wie beispielsweise eine unzureichende Nährstoffaufnahme oder eine Stoffwechselerkrankung. Es ist wichtig, die Ursache zu identifizieren und gegebenenfalls einen Arzt zu konsultieren.")
+                elif bmi_kategorie == 'Normalgewicht':
+                    st.write("Normalgewicht ist ein Indikator für ein gesundes Körpergewicht. Es ist wichtig, auf eine ausgewogene Ernährung und regelmäßige Bewegung zu achten, um das Gewicht zu halten.")
+                elif bmi_kategorie == 'Übergewicht':
+                    st.write("Übergewicht kann das Risiko für verschiedene Erkrankungen wie Diabetes oder Herz-Kreislauf-Erkrankungen erhöhen. Es ist ratsam, auf eine gesunde Ernährung und ausreichend Bewegung zu achten, um das Gewicht zu reduzieren. Jedoch kann vor allem leichtes Übergewicht auch durch Muskelmasse bedingt sein und muss nicht zwangsläufig ungesund sein.")
+                else:
+                    st.write("Adipositas ist eine ernsthafte Erkrankung, die das Risiko für verschiedene gesundheitliche Probleme wie Diabetes, Herz-Kreislauf-Erkrankungen oder Gelenkprobleme erhöhen kann. Es könnte hilfreich sein, professionelle Hilfe in Anspruch zu nehmen, um das Gewicht zu reduzieren und die Gesundheit zu verbessern.")
+
+                # Hinweis
+                st.markdown("### HINWEIS!")
+                st.write("Zu beachten ist, dass der BMI ein einfacher Indikator für das Körpergewicht ist, der jedoch nicht zwischen Muskelmasse und Fettmasse unterscheidet. Daher kann er bei sehr muskulösen Personen zu einem falschen Ergebnis führen.")
+
+        except Exception as e:
+            st.write(f"Ein Fehler ist aufgetreten: {e}")
+
 
 with zonen_taaab:
     st.header("EKG-Data")
