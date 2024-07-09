@@ -160,7 +160,7 @@ with bmi_taab:
                 if bmi < 18.5:
                     bmi_kategorie = 'Untergewicht'
                     bmi_value = '105'
-                    farbe = 'yellow'
+                    farbe = 'gold'
                 elif 18.5 <= bmi < 25:
                     bmi_kategorie = 'Normalgewicht'
                     bmi_value = '18.5'
@@ -177,7 +177,7 @@ with bmi_taab:
                 # Daten für das Kuchendiagramm
                 labels = ['Untergewicht', 'Normalgewicht', 'Übergewicht', 'Adipositas']
                 sizes = [18.5, 6.5, 5, 100 - 30]  # Anteile basierend auf BMI-Grenzen
-                colors = ['yellow', 'green', 'orange', 'red']
+                colors = ['gold', 'green', 'orange', 'red']
                 bmi_Werte = ["0 - 18.5", "18.5 - 25", "25 - 30", "30 - 105"]
 
                 fig1, ax1 = plt.subplots()
