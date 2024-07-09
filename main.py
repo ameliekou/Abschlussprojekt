@@ -7,7 +7,7 @@ from read_pandas import read_my_csv, read_activity_csv, compute_HR_statistics, c
 from bmifunctions import calculate_angle_for_bmi, calculate_angle_and_label_positions
 # Zu Beginn
 
-ekg_tab, bmi_taab, zonen_taaab=st.tabs(["EKG-Daten", "BMI Rechner" ," Zonen"])
+ekg_tab, bmi_taab=st.tabs(["EKG-Daten", "BMI Rechner"])
 
 
 db = Person.DB()
