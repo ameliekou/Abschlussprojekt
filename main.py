@@ -5,7 +5,6 @@ import Person
 import numpy as np
 from read_pandas import read_my_csv, read_activity_csv, compute_HR_statistics, compute_power_statistics, make_pow_HR_plot, add_HR_zones, make_plot, compute_power_in_zones, compute_time_in_zones
 from bmifunctions import calculate_angle_for_bmi, calculate_angle_and_label_positions
-# Zu Beginn
 
 ekg_tab, bmi_taab=st.tabs(["EKG-Daten", "BMI Rechner"])
 
@@ -16,6 +15,7 @@ db = Person.DB()
 person_names = db.get_person_list()
 
 # Anlegen diverser Session States
+
 ## Gewählte Versuchsperson
 if 'aktuelle_versuchsperson' not in st.session_state:
     st.session_state.aktuelle_versuchsperson = 'None'
@@ -24,7 +24,7 @@ if 'aktuelle_versuchsperson' not in st.session_state:
 if 'picture_path' not in st.session_state:
     st.session_state.picture_path = 'data/pictures/none.jpg'
 
-## TODO: Session State für Pfad zu EKG Daten
+## Session State für Pfad zu EKG Daten
 if 'ekg_test' not in st.session_state:
     st.session_state.ekg_test = None
 
@@ -48,8 +48,6 @@ with ekg_tab:
             'Versuchsperson',
             options = person_names, key="sbVersuchsperson", label_visibility="hidden")
 
-    # Name der Versuchsperson
-    #st.write("Der Name ist: ", st.session_state.aktuelle_versuchsperson) 
 
     # Weitere Daten wie Geburtsdatum etc. schön anzeigen
     person = db.find_person_data_by_name(st.session_state.aktuelle_versuchsperson)
@@ -59,10 +57,10 @@ with ekg_tab:
         st.write("Alter: ", person.calc_age())
         st.write("ID: ", person.id)
         
-        #Öffne EKG-Daten
+    # Öffne EKG-Daten
         ekgdata_dict = ekgdata.EKGdata.load_by_id(person.id)
 
-    # TODO: Für eine Person gibt es ggf. mehrere EKG-Daten. Diese müssen über den Pfad ausgewählt werden können
+    # Für eine Person gibt es ggf. mehrere EKG-Daten. Diese müssen über den Pfad ausgewählt werden können
         ekg_list = []
         for ekg in ekgdata_dict:
             ekg_list.append(ekg["id"])
@@ -72,15 +70,12 @@ with ekg_tab:
             'EKG-Test auswählen:',
             options = ekg_list)
 
-
-
-    # Nachdem eine  ausgewählt wurde, die auch in der Datenbank ist
-    # Finde den Pfad zur Bilddatei
+    # Nachdem eine ausgewählt wurde, die auch in der Datenbank ist
     if st.session_state.aktuelle_versuchsperson in person_names:
         st.session_state.picture_path = person.picture_path
         # st.write("Der Pfad ist: ", st.session_state.picture_path) 
 
-    #Bild anzeigen
+    # Bild anzeigen
     from PIL import Image
     image = Image.open(st.session_state.picture_path)
 
@@ -96,7 +91,7 @@ with ekg_tab:
         key=notes_key
         )
     st.session_state.user_notes[notes_key] = user_notes
-
+    
     # EKG-Daten anzeigen
     current_ekg_data = ekgdata.EKGdata.load_by_id(person.id, st.session_state.ekg_test)
     current_ekg_data_class = ekgdata.EKGdata(current_ekg_data)
@@ -109,10 +104,6 @@ with ekg_tab:
 
  
     # EKG-Daten als Matplotlib Plot anzeigen
-    
-    #fig = current_ekg_data_class.plot_time_series()
-    #st.plotly_chart(fig)
-
     st.subheader("Wählen sie eine Zeitperiode aus:")
     slider_range = st.slider("Zeitbereich:", value=[float(0), current_ekg_data_class.time_in_seconds()/60], min_value=float(0), max_value=current_ekg_data_class.time_in_seconds()/60, step=1/60)
     start, end = slider_range
@@ -123,9 +114,7 @@ with ekg_tab:
     fig.update_layout(xaxis=dict(range=[start, end]))
     st.plotly_chart(fig) 
 
-    #st.slider("von", 0, current_ekg_data_class.max_time(), 0)
-    #st.slider("bis", 0, current_ekg_data_class.max_time(), current_ekg_data_class.max_time() - 1)
-
+  
     # Berechnung der HRV (anpassen an Ihre EKGdata-Klasse)
     if current_ekg_data_class:
         r_peaks = current_ekg_data_class.find_peaks()  # Annahme: Methode zur Erkennung von R-Zacken implementiert
@@ -141,8 +130,9 @@ with ekg_tab:
         plt.hist(rr_intervals, bins=20, color='blue', alpha=0.7)
         plt.xlabel('RR-Intervalle (Sekunden)')
         plt.ylabel('Häufigkeit')
-        st.pyplot(plt)        
+        st.pyplot(plt)
 
+# BMI Rechner
 with bmi_taab:
     gewicht = st.number_input("Gewicht in kg")
     groesse = st.number_input("Größe in cm")
@@ -155,6 +145,7 @@ with bmi_taab:
             else:
                 bmi_rounded = round(bmi, 1)
                 st.write("Ihr BMI beträgt: {:.1f}".format(bmi_rounded))
+
                 
                 # BMI Kategorien
                 if bmi < 18.5:
@@ -196,7 +187,7 @@ with bmi_taab:
                     ax1.text(x, y, bmi_Werte[i], ha='center', va='center', fontsize=6.5, color='black')
 
                 # Anzeige des Kuchendiagramms in Streamlit
-                
+        
                 st.pyplot(fig1)
 
                 # Anzeige der BMI Kategorie und Farbe in HTML
